@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Brasa Nobre · Advisor
 
-## Getting Started
+App web interno para os sócios da Brasa Nobre (Helder e Bárbara) usarem como
+advisor de marketing e negócios. Stack: Next.js 16 + Tailwind + Vercel AI SDK
++ OpenRouter + Supabase.
 
-First, run the development server:
+> **Status:** Fase 2 em construção — chat com persona, auth Google OAuth,
+> persistência de conversas em Supabase. Próxima fase: RAG dos PDFs do Drive.
+
+## Setup local
+
+### 1. Variáveis de ambiente
+
+Copie `.env.example` para `.env.local` e preencha:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `OPENROUTER_API_KEY` — chave em https://openrouter.ai/keys.
+- `OPENROUTER_MODEL` — confira o slug atual em https://openrouter.ai/models.
+- `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` —
+  Project Settings → API no dashboard do Supabase.
+- `APP_ALLOWED_EMAILS` — e-mails Google de Helder e Bárbara, separados por
+  vírgula. Camada extra de segurança além do trigger no banco.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Banco (Supabase)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No SQL Editor do projeto, cole e rode o conteúdo de
+`supabase/migrations/20260508193611_init.sql`.
 
-## Learn More
+Depois, ainda no SQL Editor, **adicione os e-mails autorizados**:
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+insert into public.allowed_emails (email, display_name) values
+  ('helder@exemplo.com', 'Helder'),
+  ('barbara@exemplo.com', 'Bárbara');
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> Sem isso, o trigger rejeita o signup e a pessoa cai em `/login` com erro.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Google OAuth
 
-## Deploy on Vercel
+Passo a passo em [`docs/oauth-setup.md`](./docs/oauth-setup.md).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Rodar
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm install
+npm run dev
+```
+
+Abra http://localhost:3000 → cai em `/login` → "Entrar com Google".
+
+## Estrutura
+
+- `src/lib/persona.ts` — system prompt do advisor + `buildSystemPrompt(name)`.
+- `src/lib/supabase/` — clientes browser/server e helper de proxy de sessão.
+- `src/proxy.ts` — Next 16 Proxy (ex-middleware): refresca sessão e protege
+  rotas autenticadas.
+- `src/app/login/`, `src/app/auth/{callback,signout}/` — fluxo OAuth.
+- `src/app/(app)/` — área autenticada (sidebar com conversas + chat).
+- `src/app/api/chat/route.ts` — streaming + persistência em Supabase.
+- `src/components/chat.tsx` — componente de chat (input, mensagens, streaming).
+- `supabase/migrations/` — SQL do schema (users/conversations/messages/facts +
+  RLS).
+
+## Próximas fases
+
+- **Fase 3** — RAG sobre PDFs da pasta do Google Drive (vector search via
+  pgvector no Supabase).
+- **Fase 4** — Detector de "modo atualização" (ex.: "kit X agora custa Y" →
+  grava na tabela `facts`, persiste entre Helder e Bárbara).
+
+## Decisões fechadas
+
+- Hospedagem: Vercel.
+- API: OpenRouter (modelo configurável via env).
+- Banco/auth: Supabase + Google OAuth, allowlist via DB + env.
+- Knowledge base (fase 3): PDFs no Google Drive + RAG.

@@ -8,7 +8,21 @@
       "mcp__claude_ai_Supabase__list_projects",
       "mcp__claude_ai_Supabase__confirm_cost",
       "mcp__claude_ai_Supabase__create_project",
-      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --turbopack --no-git --yes)"
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --turbopack --no-git --yes)",
+      "Bash(npx tsc *)",
+      "Bash(OPENROUTER_API_KEY=dummy_for_build npm run build)",
+      "Bash(PORT=3000 npm run *)",
+      "Bash(PORT=3100 npx next *)",
+      "Bash(curl -sS -o /tmp/home.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3100/)",
+      "Read(//tmp/**)",
+      "mcp__claude_ai_Supabase__get_project",
+      "mcp__claude_ai_Supabase__pause_project",
+      "Bash(mkdir -p /root/projetos/bn_backup_gestao)",
+      "Read(//root/projetos/**)",
+      "Bash(chmod +x /root/projetos/bn_backup_gestao/backup.sh)",
+      "Bash(npx next *)",
+      "Bash(ip -o -4 addr show)",
+      "Bash(gh auth *)"
     ]
   }
 }
